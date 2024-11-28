@@ -20,20 +20,52 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 3.92.209.238 >> ~/.ssh/known_hosts
+      # Agregar todas las direcciones IP al archivo known_hosts
+          ssh-keyscan -H 54.210.136.75 >> ~/.ssh/known_hosts
           ssh-keyscan -H 34.227.163.173 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 3.95.30.30 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 3.92.209.238 >> ~/.ssh/known_hosts
 
-      # Paso 3: Desplegar los archivos a cada instancia EC2
-      - name: Deploy to EC2 instances
+      # Paso 3: Desplegar los archivos en la primera instancia EC2
+      - name: Deploy to Instance 1
         run: |
-          for IP in 3.92.209.238 34.227.163.173; do
-            ssh -o StrictHostKeyChecking=no ec2-user@$IP <<EOF
-              if [ ! -d "/home/ec2-user/AwsMC" ]; then
-                git clone https://github.com/mateocarruce/AwsMC.git
-              fi
-              cd /home/ec2-user/AwsMC
-              git pull origin main  # Actualizar los archivos del repositorio
-              sudo cp index.html /var/www/html/  # Copiar index.html al directorio de Nginx
-              sudo systemctl restart nginx  # Reiniciar Nginx
-              EOF
-          done
+          ssh -o StrictHostKeyChecking=no ec2-user@54.210.136.75 << 'EOF'
+            cd /home/ec2-user/AwsMC || git clone https://github.com/mateocarruce/AwsMC.git
+            cd AwsMC
+            git pull origin main  # Actualizar los archivos del repositorio
+            sudo cp index.html /var/www/html/  # Copiar index.html al directorio de Nginx
+            sudo systemctl restart nginx  # Reiniciar Nginx
+          EOF
+
+      # Paso 4: Desplegar los archivos en la segunda instancia EC2
+      - name: Deploy to Instance 2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@34.227.163.173 << 'EOF'
+            cd /home/ec2-user/AwsMC || git clone https://github.com/mateocarruce/AwsMC.git
+            cd AwsMC
+            git pull origin main  # Actualizar los archivos del repositorio
+            sudo cp index.html /var/www/html/  # Copiar index.html al directorio de Nginx
+            sudo systemctl restart nginx  # Reiniciar Nginx
+          EOF
+
+      # Paso 5: Desplegar los archivos en la tercera instancia EC2
+      - name: Deploy to Instance 3
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@3.95.30.30 << 'EOF'
+            cd /home/ec2-user/AwsMC || git clone https://github.com/mateocarruce/AwsMC.git
+            cd AwsMC
+            git pull origin main  # Actualizar los archivos del repositorio
+            sudo cp index.html /var/www/html/  # Copiar index.html al directorio de Nginx
+            sudo systemctl restart nginx  # Reiniciar Nginx
+          EOF
+
+      # Paso 6: Desplegar los archivos en la cuarta instancia EC2
+      - name: Deploy to Instance 4
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@3.92.209.238 << 'EOF'
+            cd /home/ec2-user/AwsMC || git clone https://github.com/mateocarruce/AwsMC.git
+            cd AwsMC
+            git pull origin main  # Actualizar los archivos del repositorio
+            sudo cp index.html /var/www/html/  # Copiar index.html al directorio de Nginx
+            sudo systemctl restart nginx  # Reiniciar Nginx
+          EOF
